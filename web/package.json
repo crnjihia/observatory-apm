@@ -1,0 +1,28 @@
+// path: C:/Users/crnji/Videos/Projects/Web Development/New/observatory-apm/web/package.json
+{
+  "name": "observatory-apm-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "14.2.4",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "d3": "7.9.0"
+  },
+  "devDependencies": {
+    "typescript": "5.5.4",
+    "@types/react": "18.3.5",
+    "@types/node": "20.14.2",
+    "@types/d3": "7.4.0",
+    "autoprefixer": "10.4.19",
+    "postcss": "8.4.41",
+    "tailwindcss": "3.4.4"
+  }
+}
