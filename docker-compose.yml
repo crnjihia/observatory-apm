@@ -1,0 +1,102 @@
+version: "3.9"
+
+services:
+  timescaledb:
+    image: timescale/timescaledb-ha:pg16
+    container_name: observatory-timescaledb
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: observatory
+      POSTGRES_PASSWORD: observatory_secret
+      POSTGRES_DB: observatory
+      TIMESCALEDB_TELEMETRY: "off"
+    volumes:
+      - timescale_data:/home/postgres/pgdata/data
+      - ./db/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U observatory -d observatory"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: observatory-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: observatory-api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env.example
+    environment:
+      DATABASE_URL: postgres://observatory:observatory_secret@timescaledb:5432/observatory?sslmode=disable
+      REDIS_URL: redis://redis:6379/0
+      PORT: 8080
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: observatory-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+    depends_on:
+      - api
+
+  demo:
+    build:
+      context: ./demo
+      dockerfile: Dockerfile
+    container_name: observatory-demo
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      PORT: 4000
+      OBSERVATORY_ENDPOINT: http://api:8080
+      USE_MOCK_ADAPTERS: "true"
+    depends_on:
+      - api
+
+  loadgen:
+    build:
+      context: ./cmd/loadgen
+      dockerfile: Dockerfile
+    container_name: observatory-loadgen
+    profiles:
+      - benchmark
+    environment:
+      TARGET_ENDPOINT: http://api:8080
+      RATE_PER_SEC: 10000
+      DURATION_SEC: 30
+    depends_on:
+      - api
+
+volumes:
+  timescale_data:
+  redis_data:

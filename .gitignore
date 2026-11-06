@@ -1,0 +1,46 @@
+# Binaries & build outputs
+bin/
+dist/
+build/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.tsbuildinfo
+
+# Dependencies
+node_modules/
+vendor/
+
+# Next.js
+.next/
+out/
+
+# Environment files & secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+
+# IDE & OS files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Test coverage & logs
+coverage/
+*.log
+.nyc_output/
+playwright-report/
+test-results/
+
+# Temporary data files
+/tmp/
+*.tmp
