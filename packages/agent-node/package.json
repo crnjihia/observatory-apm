@@ -1,0 +1,35 @@
+{
+  "name": "@crnjihia/observatory-agent-node",
+  "version": "1.0.0",
+  "description": "Observatory APM lightweight Node.js telemetry agent with auto-instrumentation and log correlation",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crnjihia/observatory-apm.git"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test dist/test/agent.test.js",
+    "pretest": "npm run build"
+  },
+  "keywords": [
+    "observatory",
+    "apm",
+    "opentelemetry",
+    "tracing",
+    "logging",
+    "metrics",
+    "daraja",
+    "mpesa"
+  ],
+  "author": "Christopher Njihia <crnjihia@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "20.14.2",
+    "typescript": "5.5.4"
+  }
+}
