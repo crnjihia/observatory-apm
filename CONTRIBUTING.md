@@ -1,11 +1,11 @@
 # Contributing to Observatory APM
 
-Thank you for your interest in contributing to **Observatory APM**! We welcome code contributions, issue reports, documentation improvements, and performance benchmarks.
+Thank you for your interest in contributing to **Observatory APM**! I welcome code contributions, issue reports, documentation improvements, and performance benchmarks.
 
 ## Development Workflow
 
 1. **Branching Strategy**: Branch off `main` using descriptive branch names (`feat/feature-name`, `fix/issue-description`, `perf/optimization`).
-2. **Commit Convention**: We follow [Conventional Commits](https://www.conventionalcommits.org/):
+2. **Commit Convention**: I follow [Conventional Commits](https://www.conventionalcommits.org/):
    - `feat(scope): add new capability`
    - `fix(scope): resolve defect`
    - `perf(scope): latency or memory optimization`
