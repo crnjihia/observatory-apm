@@ -13,11 +13,11 @@ import (
 
 // CopySpans bulk-inserts spans into the TimescaleDB hypertable using pgx.CopyFrom.
 func CopySpans(ctx context.Context, pool *pgxpool.Pool, spans []ingest.Span) (int64, error) {
-	if pool == nil {
-		return 0, fmt.Errorf("database pool is nil")
-	}
 	if len(spans) == 0 {
 		return 0, nil
+	}
+	if pool == nil {
+		return 0, fmt.Errorf("database pool is nil")
 	}
 
 	rows := make([][]interface{}, len(spans))
@@ -51,11 +51,11 @@ func CopySpans(ctx context.Context, pool *pgxpool.Pool, spans []ingest.Span) (in
 
 // CopyMetrics bulk-inserts metrics into the TimescaleDB hypertable using pgx.CopyFrom.
 func CopyMetrics(ctx context.Context, pool *pgxpool.Pool, metrics []ingest.Metric) (int64, error) {
-	if pool == nil {
-		return 0, fmt.Errorf("database pool is nil")
-	}
 	if len(metrics) == 0 {
 		return 0, nil
+	}
+	if pool == nil {
+		return 0, fmt.Errorf("database pool is nil")
 	}
 
 	rows := make([][]interface{}, len(metrics))
@@ -84,11 +84,11 @@ func CopyMetrics(ctx context.Context, pool *pgxpool.Pool, metrics []ingest.Metri
 
 // CopyLogs bulk-inserts log entries into the TimescaleDB hypertable using pgx.CopyFrom.
 func CopyLogs(ctx context.Context, pool *pgxpool.Pool, logs []ingest.LogRecord) (int64, error) {
-	if pool == nil {
-		return 0, fmt.Errorf("database pool is nil")
-	}
 	if len(logs) == 0 {
 		return 0, nil
+	}
+	if pool == nil {
+		return 0, fmt.Errorf("database pool is nil")
 	}
 
 	rows := make([][]interface{}, len(logs))

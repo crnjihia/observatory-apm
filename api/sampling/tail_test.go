@@ -60,7 +60,8 @@ func TestHeadSampler(t *testing.T) {
 	sampledCount := 0
 	totalTraces := 2000
 	for i := 0; i < totalTraces; i++ {
-		traceID := fmt.Sprintf("0000000000000000%016x", i)
+		val := uint64(i) * 11400714819323198485
+		traceID := fmt.Sprintf("0000000000000000%016x", val)
 		if s10.TraceIdRatioDecision(traceID) == DecisionRecordAndSample {
 			sampledCount++
 		}
