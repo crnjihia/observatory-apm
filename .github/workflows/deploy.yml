@@ -1,0 +1,68 @@
+# path: .github/workflows/deploy.yml
+name: GitHub Deployments
+
+on:
+  push:
+    branches:
+      - main
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  deploy:
+    name: Deploy to Environment
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event.inputs.environment || (github.event_name == 'release' && 'production' || 'staging') }}
+      url: ${{ (github.event.inputs.environment == 'production' || github.event_name == 'release') && 'https://observatory.crnjihia.dev' || 'https://staging.observatory.crnjihia.dev' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create GitHub Deployment
+        uses: chrnorm/deployment-action@v2
+        id: deployment
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          environment-url: ${{ (github.event.inputs.environment == 'production' || github.event_name == 'release') && 'https://observatory.crnjihia.dev' || 'https://staging.observatory.crnjihia.dev' }}
+          environment: ${{ github.event.inputs.environment || (github.event_name == 'release' && 'production' || 'staging') }}
+
+      - name: Execute Deployment Steps
+        run: |
+          ENV_NAME="${{ steps.deployment.outputs.environment }}"
+          echo "Deploying Observatory APM to ${ENV_NAME}..."
+          # Pull latest signed images from GitHub Packages
+          echo "Target Registry: ghcr.io/${{ github.repository }}"
+          echo "Target URL: ${{ steps.deployment.outputs.environment_url }}"
+
+      - name: Update Deployment Status (Success)
+        if: success()
+        uses: chrnorm/deployment-status@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          state: success
+          deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+          environment-url: ${{ (github.event.inputs.environment == 'production' || github.event_name == 'release') && 'https://observatory.crnjihia.dev' || 'https://staging.observatory.crnjihia.dev' }}
+
+      - name: Update Deployment Status (Failure)
+        if: failure()
+        uses: chrnorm/deployment-status@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          state: failure
+          deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+

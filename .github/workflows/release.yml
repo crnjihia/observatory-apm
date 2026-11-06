@@ -1,0 +1,101 @@
+# path: .github/workflows/release.yml
+name: GitHub Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release Git tag (e.g. v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+permissions:
+  contents: write
+
+jobs:
+  build-release-binaries:
+    name: Cross-Compile Release Artifacts
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            ext: ""
+          - goos: linux
+            goarch: arm64
+            ext: ""
+          - goos: darwin
+            goarch: amd64
+            ext: ""
+          - goos: darwin
+            goarch: arm64
+            ext: ""
+          - goos: windows
+            goarch: amd64
+            ext: ".exe"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache-dependency-path: api/go.sum
+
+      - name: Build binary
+        working-directory: ./api
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
+        run: |
+          TAG_NAME="${{ github.ref_name }}"
+          if [ -z "$TAG_NAME" ] || [ "$TAG_NAME" = "main" ]; then
+            TAG_NAME="${{ github.event.inputs.tag || 'v1.0.0' }}"
+          fi
+          mkdir -p ../dist
+          ARTIFACT_NAME="observatory-api_${TAG_NAME}_${{ matrix.goos }}_${{ matrix.goarch }}${{ matrix.ext }}"
+          go build -ldflags="-w -s -X main.version=${TAG_NAME}" -o "../dist/${ARTIFACT_NAME}" ./main.go
+
+      - name: Upload artifact for aggregation
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/
+          retention-days: 1
+
+  publish-github-release:
+    name: Publish Release & Checksums
+    needs: build-release-binaries
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all compiled binaries
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+          merge-multiple: true
+
+      - name: Compute SHA-256 Checksums
+        working-directory: release-artifacts
+        run: |
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          name: "Observatory APM Release ${{ github.event.inputs.tag || github.ref_name }}"
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            release-artifacts/*
